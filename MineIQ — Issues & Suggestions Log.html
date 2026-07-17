@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MineIQ — Issues & Suggestions Log</title>
+
+<script>
+  const CONFIG = {
+    SUPABASE_URL:  'https://kbohvissrjgvdrkollki.supabase.co',
+    SUPABASE_KEY:  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtib2h2aXNzcmpndmRya29sbGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg2MzgsImV4cCI6MjA5Nzc2NDYzOH0.xqj-Bq8dbl2p4LvzLaTYv7nOMjl63zF8hNJOZ-ooh1c',
+    DATACLYSM_PIN: 'DATACLYSM2024',
+  };
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.6.0/dist/tabler-icons.min.css">
+
+<style>
+  :root {
+    --gold: #f59e0b; --gold-dark: #d97706;
+    --navy: #0f1f35; --navy-mid: #1a2e47; --navy-light: #243d59;
+    --surface: #ffffff; --surface-2: #f8f9fb; --surface-3: #f0f2f5;
+    --border: rgba(0,0,0,0.08); --border-mid: rgba(0,0,0,0.15);
+    --text-primary: #0f1f35; --text-secondary: #5a6a7e; --text-muted: #94a3b8;
+    --red: #ef4444; --red-bg: #fee2e2;
+    --orange: #f97316; --orange-bg: #ffedd5;
+    --amber: #f59e0b; --amber-bg: #fef3c7;
+    --green: #10b981; --green-bg: #d1fae5;
+    --purple: #6366f1; --purple-bg: #ede9fe;
+    --blue: #3b82f6; --blue-bg: #dbeafe;
+    --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+    --radius: 6px; --radius-lg: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--surface-3); color: var(--text-primary); min-height: 100vh; font-size: 14px; }
+
+  /* AUTH */
+  #auth-screen { position: fixed; inset: 0; background: var(--navy); display: flex; align-items: center; justify-content: center; z-index: 999; }
+  .auth-card { background: var(--navy-mid); border: 1px solid var(--navy-light); border-radius: 12px; padding: 40px; width: 400px; text-align: center; }
+  .auth-logo { width: 56px; height: 56px; background: var(--gold); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; font-size: 16px; color: var(--navy); margin: 0 auto 20px; }
+  .auth-card h1 { color: white; font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .auth-card p { color: #94a3b8; font-size: 13px; margin-bottom: 28px; }
+  .auth-tabs { display: flex; gap: 2px; background: var(--navy); border-radius: 8px; padding: 3px; margin-bottom: 24px; }
+  .auth-tab { flex: 1; padding: 8px; border: none; background: transparent; color: #94a3b8; font-size: 13px; border-radius: 6px; cursor: pointer; font-family: var(--font); }
+  .auth-tab.active { background: var(--gold); color: var(--navy); font-weight: 600; }
+  .auth-input { width: 100%; padding: 10px 14px; background: var(--navy); border: 1px solid var(--navy-light); border-radius: 8px; color: white; font-size: 14px; font-family: var(--font); margin-bottom: 12px; }
+  .auth-input:focus { outline: none; border-color: var(--gold); }
+  .auth-btn { width: 100%; padding: 11px; background: var(--gold); color: var(--navy); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); margin-bottom: 8px; }
+  .auth-btn:hover { background: var(--gold-dark); }
+  .auth-error { color: #f87171; font-size: 12px; margin-bottom: 10px; display: none; }
+  .auth-note { font-size: 12px; color: #64748b; margin-top: 12px; line-height: 1.5; }
+  .name-input-wrap { margin-bottom: 16px; }
+  .name-input-wrap label { display: block; font-size: 11px; color: #94a3b8; text-align: left; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* APP */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  #app.visible { display: flex; }
+
+  .topbar { background: var(--navy); color: white; padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 16px; border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 50; }
+  .topbar-logo { width: 34px; height: 34px; background: var(--gold); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; font-size: 12px; color: var(--navy); flex-shrink: 0; }
+  .topbar-title { font-size: 15px; font-weight: 600; color: white; }
+  .topbar-sub { font-size: 11px; color: #64748b; margin-top: 1px; }
+  .topbar-badge { background: var(--gold); color: var(--navy); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; font-family: var(--mono); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .user-chip { background: var(--navy-light); padding: 5px 12px; border-radius: 20px; font-size: 12px; color: #cbd5e1; display: flex; align-items: center; gap: 6px; }
+  .btn-gold { background: var(--gold); color: var(--navy); border: none; padding: 7px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: var(--font); }
+  .btn-gold:hover { background: var(--gold-dark); }
+  .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; padding: 6px 12px; border-radius: var(--radius); font-size: 12px; cursor: pointer; font-family: var(--font); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.05); color: white; }
+
+  .stats-row { display: flex; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .stat-tile { flex: 1; background: var(--surface); padding: 12px 20px; }
+  .stat-tile .num { font-size: 22px; font-weight: 600; font-family: var(--mono); }
+  .stat-tile .lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 1px; }
+  .stat-open .num { color: var(--red); } .stat-progress .num { color: var(--orange); }
+  .stat-resolved .num { color: var(--green); } .stat-suggestions .num { color: var(--purple); }
+
+  .toolbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; pointer-events: none; }
+  .search-wrap input { width: 100%; padding: 7px 10px 7px 34px; border: 1px solid var(--border-mid); border-radius: var(--radius); font-size: 13px; font-family: var(--font); background: var(--surface-2); color: var(--text-primary); }
+  .search-wrap input:focus { outline: none; border-color: var(--gold); }
+  .flt { padding: 7px 10px; border: 1px solid var(--border-mid); border-radius: var(--radius); font-size: 13px; background: var(--surface-2); color: var(--text-primary); font-family: var(--font); cursor: pointer; }
+  .sync-indicator { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .table-container { flex: 1; overflow-x: auto; padding: 16px 24px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); }
+  th { text-align: left; padding: 9px 12px; background: var(--surface-2); color: var(--text-muted); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); font-family: var(--mono); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface-2); }
+  tr.resolved-row td { opacity: 0.55; }
+
+  .id-tag { font-family: var(--mono); font-size: 11px; color: var(--text-muted); background: var(--surface-3); padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+  .title-text { font-weight: 500; font-size: 13px; }
+  .desc-text { font-size: 12px; color: var(--text-secondary); margin-top: 2px; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .mod-Timesheets { background: #dbeafe; color: #1e40af; }
+  .mod-Pre-Starts { background: #d1fae5; color: #065f46; }
+  .mod-Work-Orders { background: #fef3c7; color: #78350f; }
+  .mod-Daily-Reporting { background: #fce7f3; color: #831843; }
+  .mod-Progress-Claims { background: #ede9fe; color: #3730a3; }
+  .mod-General { background: #f1f5f9; color: #334155; }
+  .type-Bug { background: var(--red-bg); color: #991b1b; }
+  .type-Suggestion { background: var(--purple-bg); color: #3730a3; }
+  .type-Question { background: var(--blue-bg); color: #1e40af; }
+
+  .prio-wrap { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .prio-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .p-Critical { background: var(--red); } .p-High { background: var(--orange); }
+  .p-Medium { background: var(--amber); } .p-Low { background: var(--green); }
+
+  .status-pill { border: none; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-family: var(--font); }
+  .s-Open { background: var(--red-bg); color: #991b1b; }
+  .s-In-Progress { background: var(--amber-bg); color: #78350f; }
+  .s-Resolved { background: var(--green-bg); color: #065f46; }
+  .s-Wont-Fix { background: #f1f5f9; color: #475569; }
+
+  .response-snip { font-size: 11px; color: var(--text-secondary); max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
+  .no-resp { color: var(--text-muted); font-style: normal; font-size: 12px; }
+  .date-cell { font-size: 11px; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 5px; border-radius: 4px; font-size: 16px; }
+  .icon-btn:hover { background: var(--surface-3); color: var(--text-primary); }
+
+  .empty { text-align: center; padding: 80px 20px; }
+  .empty i { font-size: 48px; color: var(--border-mid); display: block; margin-bottom: 12px; }
+  .empty p { color: var(--text-muted); }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,31,53,0.6); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: var(--radius-lg); width: 580px; max-width: 100%; max-height: 92vh; overflow-y: auto; }
+  .modal-hdr { background: var(--navy); padding: 16px 20px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-hdr h2 { color: white; font-size: 15px; font-weight: 600; }
+  .modal-close-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 22px; line-height: 1; }
+  .modal-close-btn:hover { color: white; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .field input, .field select, .field textarea { border: 1px solid var(--border-mid); border-radius: var(--radius); padding: 8px 10px; font-size: 13px; font-family: var(--font); background: var(--surface-2); color: var(--text-primary); }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--gold); }
+  .field textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+  .modal-ftr { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-cancel { background: var(--surface-2); border: 1px solid var(--border-mid); padding: 8px 16px; border-radius: var(--radius); font-size: 13px; cursor: pointer; color: var(--text-primary); font-family: var(--font); }
+
+  .panel-overlay { display: none; position: fixed; inset: 0; z-index: 150; }
+  .panel-overlay.open { display: block; }
+  .panel-backdrop { position: absolute; inset: 0; background: rgba(15,31,53,0.3); }
+  .detail-panel { position: absolute; top: 0; right: 0; width: 440px; height: 100%; background: var(--surface); border-left: 1px solid var(--border-mid); display: flex; flex-direction: column; overflow: hidden; }
+  .panel-hdr { background: var(--navy); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .panel-hdr-id { font-family: var(--mono); font-size: 13px; color: var(--gold); }
+  .panel-hdr-close { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; }
+  .panel-body { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+  .panel-section h4 { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 6px; font-family: var(--mono); }
+  .panel-section p { font-size: 13px; line-height: 1.65; }
+  .panel-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .meta-item span { font-size: 10px; color: var(--text-muted); display: block; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-family: var(--mono); }
+  .meta-item strong { font-size: 13px; font-weight: 500; }
+  .dataclysm-banner { background: var(--navy); border-radius: var(--radius); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .dataclysm-banner span { font-size: 12px; color: #94a3b8; }
+  .dataclysm-banner strong { color: var(--gold); }
+  .response-ta { width: 100%; border: 1px solid var(--border-mid); border-radius: var(--radius); padding: 9px 11px; font-size: 13px; font-family: var(--font); background: var(--surface-2); color: var(--text-primary); resize: vertical; min-height: 90px; line-height: 1.6; }
+  .response-ta:focus { outline: none; border-color: var(--gold); }
+  .response-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+  .btn-sm { padding: 6px 12px; border-radius: var(--radius); font-size: 12px; cursor: pointer; font-family: var(--font); border: 1px solid var(--border-mid); background: var(--surface-2); color: var(--text-primary); }
+  .btn-sm-gold { background: var(--gold); color: var(--navy); border-color: var(--gold); font-weight: 600; }
+  .btn-sm-gold:hover { background: var(--gold-dark); }
+  .status-select-full { width: 100%; border: 1px solid var(--border-mid); border-radius: var(--radius); padding: 8px 10px; font-size: 13px; font-family: var(--font); background: var(--surface-2); color: var(--text-primary); }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item { padding: 9px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 3px solid var(--gold); }
+  .history-item.client-note { border-left-color: var(--purple); }
+  .history-item.system-note { border-left-color: var(--border-mid); }
+  .h-meta { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; font-family: var(--mono); }
+  .h-text { font-size: 13px; line-height: 1.5; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--navy); color: white; padding: 12px 18px; border-radius: var(--radius); font-size: 13px; z-index: 999; border-left: 4px solid var(--gold); transform: translateX(120%); transition: transform 0.25s ease; max-width: 340px; }
+  .toast.show { transform: translateX(0); }
+  .toast.error { border-left-color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">MIQ</div>
+    <h1>MineIQ Issues Log</h1>
+    <p>Eliwana · Syncline Haulage · Dataclysm</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('internal')">Team / Internal</button>
+      <button class="auth-tab" onclick="switchTab('dataclysm')">Dataclysm</button>
+    </div>
+    <div id="internal-login">
+      <div class="name-input-wrap">
+        <label>Your name</label>
+        <input class="auth-input" type="text" id="internal-name" placeholder="e.g. John Smith" onkeydown="if(event.key==='Enter') internalSignIn()">
+      </div>
+      <button class="auth-btn" onclick="internalSignIn()">Access Issues Log</button>
+      <p class="auth-note">Internal team access — log issues, update status, add notes.</p>
+    </div>
+    <div id="pin-login" style="display:none">
+      <p class="auth-error" id="auth-error">Incorrect PIN. Please try again.</p>
+      <input class="auth-input" type="password" id="pin-input" placeholder="Enter Dataclysm access PIN" onkeydown="if(event.key==='Enter') checkPin()">
+      <button class="auth-btn" onclick="checkPin()">Access Log</button>
+      <p class="auth-note">Dataclysm vendor access — view all issues and add responses.</p>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">MIQ</div>
+    <div>
+      <div class="topbar-title">MineIQ — Issues &amp; Suggestions Log</div>
+      <div class="topbar-sub">Eliwana · Syncline Haulage · Powered by Dataclysm</div>
+    </div>
+    <span class="topbar-badge" id="access-badge">INTERNAL</span>
+    <div class="topbar-right">
+      <div class="user-chip"><i class="ti ti-user" style="font-size:14px"></i><span id="user-name">...</span></div>
+      <button class="btn-gold" id="new-issue-btn" onclick="openNewModal()"><i class="ti ti-plus"></i> Log Issue</button>
+      <button class="btn-ghost" onclick="loadIssues()"><i class="ti ti-refresh"></i></button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-tile"><div class="num" id="s-total">—</div><div class="lbl">Total</div></div>
+    <div class="stat-tile stat-open"><div class="num" id="s-open">—</div><div class="lbl">Open</div></div>
+    <div class="stat-tile stat-progress"><div class="num" id="s-progress">—</div><div class="lbl">In Progress</div></div>
+    <div class="stat-tile stat-resolved"><div class="num" id="s-resolved">—</div><div class="lbl">Resolved</div></div>
+    <div class="stat-tile stat-suggestions"><div class="num" id="s-suggestions">—</div><div class="lbl">Suggestions</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="search" placeholder="Search issues..." oninput="renderTable()">
+    </div>
+    <select class="flt" id="f-status" onchange="renderTable()">
+      <option value="">All statuses</option>
+      <option>Open</option><option>In Progress</option><option>Resolved</option><option>Won't Fix</option>
+    </select>
+    <select class="flt" id="f-module" onchange="renderTable()">
+      <option value="">All modules</option>
+      <option>Timesheets</option><option>Pre-Starts</option><option>Work Orders</option>
+      <option>Daily Reporting</option><option>Progress Claims</option><option>General</option>
+    </select>
+    <select class="flt" id="f-priority" onchange="renderTable()">
+      <option value="">All priorities</option>
+      <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+    </select>
+    <select class="flt" id="f-type" onchange="renderTable()">
+      <option value="">All types</option>
+      <option>Bug</option><option>Suggestion</option><option>Question</option>
+    </select>
+    <div class="sync-indicator">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Ready</span>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Module</th><th>Type</th><th>Priority</th>
+          <th>Status</th><th>Reporter</th><th>Logged</th><th>Dataclysm Response</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div id="empty-state" class="empty" style="display:none">
+      <i class="ti ti-clipboard-list"></i>
+      <p>No issues found. Log your first issue above.</p>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ISSUE MODAL -->
+<div class="modal-overlay" id="new-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>Log New Issue / Suggestion</h2>
+      <button class="modal-close-btn" onclick="closeNewModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Title *</label><input type="text" id="f-title" placeholder="Brief summary of the issue or suggestion"></div>
+      <div class="field"><label>Description *</label><textarea id="f-desc" placeholder="Detail what happened, what was expected, steps to reproduce..."></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Module *</label>
+          <select id="m-module"><option value="">Select module</option>
+            <option>Timesheets</option><option>Pre-Starts</option><option>Work Orders</option>
+            <option>Daily Reporting</option><option>Progress Claims</option><option>General</option>
+          </select>
+        </div>
+        <div class="field"><label>Type *</label>
+          <select id="m-type"><option value="">Select type</option>
+            <option>Bug</option><option>Suggestion</option><option>Question</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Priority *</label>
+          <select id="m-priority"><option value="">Select priority</option>
+            <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+          </select>
+        </div>
+        <div class="field"><label>Reported by *</label><input type="text" id="f-reporter" placeholder="Your name"></div>
+      </div>
+      <div class="field"><label>Steps / Additional context</label><textarea id="f-steps" placeholder="Numbered steps, frequency, environment details..."></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-cancel" onclick="closeNewModal()">Cancel</button>
+      <button class="btn-gold" onclick="saveNewIssue()"><i class="ti ti-device-floppy"></i> Save Issue</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="panel-overlay" id="panel-overlay">
+  <div class="panel-backdrop" onclick="closePanel()"></div>
+  <div class="detail-panel">
+    <div class="panel-hdr">
+      <span class="panel-hdr-id" id="dp-id"></span>
+      <button class="panel-hdr-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="dataclysm-banner">
+        <i class="ti ti-building-factory-2" style="color:var(--gold);font-size:18px"></i>
+        <span><strong>Dataclysm</strong> vendor response &amp; activity below</span>
+      </div>
+      <div class="panel-section"><h4>Title</h4><p id="dp-title"></p></div>
+      <div class="panel-section"><h4>Description</h4><p id="dp-desc" style="white-space:pre-wrap"></p></div>
+      <div class="panel-section"><h4>Steps / Context</h4><p id="dp-steps" style="white-space:pre-wrap;color:var(--text-secondary);font-size:13px"></p></div>
+      <div class="panel-section"><h4>Details</h4><div class="panel-meta-grid" id="dp-meta"></div></div>
+      <div class="panel-section">
+        <h4>Status</h4>
+        <select class="status-select-full" id="dp-status-sel" onchange="updatePanelStatus()">
+          <option>Open</option><option>In Progress</option><option>Resolved</option><option>Won't Fix</option>
+        </select>
+      </div>
+      <div class="panel-section">
+        <h4>Add Response / Note</h4>
+        <textarea class="response-ta" id="dp-response-ta" placeholder="Type your response, workaround, ETA, or note here..."></textarea>
+        <div class="response-actions">
+          <button class="btn-sm" id="client-note-btn" onclick="addNote('client')"><i class="ti ti-message"></i> Client Note</button>
+          <button class="btn-sm btn-sm-gold" onclick="addNote('dataclysm')"><i class="ti ti-building-factory-2"></i> Dataclysm Response</button>
+        </div>
+      </div>
+      <div class="panel-section">
+        <h4>Activity History</h4>
+        <div class="history-list" id="dp-history"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let issues = [];
+let currentMode = 'internal';
+let currentDetailId = null;
+let currentUser = 'Team Member';
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchTab(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active',(i===0&&mode==='internal')||(i===1&&mode==='dataclysm')));
+  document.getElementById('internal-login').style.display = mode==='internal'?'block':'none';
+  document.getElementById('pin-login').style.display = mode==='dataclysm'?'block':'none';
+}
+
+function internalSignIn() {
+  const name = document.getElementById('internal-name').value.trim();
+  if (!name) { showToast('Please enter your name to continue.', true); return; }
+  currentUser = name;
+  launchApp('internal', name);
+}
+
+function checkPin() {
+  const pin = document.getElementById('pin-input').value.trim();
+  if (pin === CONFIG.DATACLYSM_PIN) {
+    document.getElementById('auth-error').style.display = 'none';
+    launchApp('dataclysm', 'Dataclysm');
+  } else {
+    document.getElementById('auth-error').style.display = 'block';
+  }
+}
+
+function launchApp(mode, userName) {
+  currentMode = mode;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('user-name').textContent = userName;
+  document.getElementById('access-badge').textContent = mode==='dataclysm'?'DATACLYSM':'INTERNAL';
+  if (mode==='dataclysm') {
+    document.getElementById('new-issue-btn').style.display = 'none';
+    document.getElementById('client-note-btn').style.display = 'none';
+  }
+  loadIssues();
+}
+
+// ============================================================
+// SUPABASE API
+// ============================================================
+async function sbFetch(path, method='GET', body=null) {
+  setSyncing(true);
+  const opts = {
+    method,
+    headers: {
+      'apikey': CONFIG.SUPABASE_KEY,
+      'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method==='POST' ? 'return=representation' : ''
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const resp = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/' + path, opts);
+  setSyncing(false);
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(err);
+  }
+  if (resp.status === 204 || method === 'DELETE') return null;
+  return resp.json();
+}
+
+async function loadIssues() {
+  setSyncing(true);
+  try {
+    const data = await sbFetch('issues?select=*&order=created_at.desc');
+    issues = (data || []).map(row => ({
+      id: row.id,
+      issueId: row.issue_id || ('MIQ-' + String(row.id).padStart(3,'0')),
+      title: row.title || '',
+      desc: row.description || '',
+      module: row.module || '',
+      type: row.issue_type || '',
+      priority: row.priority || '',
+      status: row.status || 'Open',
+      reporter: row.reporter || '',
+      created: row.created_at || '',
+      steps: row.steps || '',
+      history: Array.isArray(row.history) ? row.history : [],
+    }));
+    renderTable();
+    updateStats();
+    setSynced();
+  } catch(e) {
+    setSyncError();
+    showToast('Failed to load issues: ' + e.message, true);
+    issues = [];
+    renderTable();
+    updateStats();
+  }
+}
+
+async function createIssue(issue) {
+  const data = await sbFetch('issues', 'POST', {
+    title: issue.title,
+    description: issue.desc,
+    module: issue.module,
+    issue_type: issue.type,
+    priority: issue.priority,
+    status: issue.status,
+    reporter: issue.reporter,
+    steps: issue.steps,
+    history: issue.history,
+    issue_id: 'MIQ-TMP',
+  });
+  const row = Array.isArray(data) ? data[0] : data;
+  const issueId = 'MIQ-' + String(row.id).padStart(3,'0');
+  await sbFetch(`issues?id=eq.${row.id}`, 'PATCH', { issue_id: issueId });
+  return { id: row.id, issueId };
+}
+
+async function updateIssue(issue) {
+  await sbFetch(`issues?id=eq.${issue.id}`, 'PATCH', {
+    status: issue.status,
+    history: issue.history,
+    priority: issue.priority,
+  });
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function updateStats() {
+  document.getElementById('s-total').textContent = issues.length;
+  document.getElementById('s-open').textContent = issues.filter(i=>i.status==='Open').length;
+  document.getElementById('s-progress').textContent = issues.filter(i=>i.status==='In Progress').length;
+  document.getElementById('s-resolved').textContent = issues.filter(i=>i.status==='Resolved').length;
+  document.getElementById('s-suggestions').textContent = issues.filter(i=>i.type==='Suggestion').length;
+}
+
+function renderTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const fS = document.getElementById('f-status').value;
+  const fM = document.getElementById('f-module').value;
+  const fP = document.getElementById('f-priority').value;
+  const fT = document.getElementById('f-type').value;
+  const pOrder = { Critical:0, High:1, Medium:2, Low:3 };
+  const modKey = m => (m||'').replace(/[\s-]+/g,'-');
+
+  let filtered = issues.filter(i => {
+    if (fS && i.status!==fS) return false;
+    if (fM && i.module!==fM) return false;
+    if (fP && i.priority!==fP) return false;
+    if (fT && i.type!==fT) return false;
+    if (q && ![i.title,i.desc,i.reporter,i.module].join(' ').toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b) => {
+    if (a.status==='Resolved'&&b.status!=='Resolved') return 1;
+    if (b.status==='Resolved'&&a.status!=='Resolved') return -1;
+    return (pOrder[a.priority]||2)-(pOrder[b.priority]||2);
+  });
+
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('empty-state');
+  if (!filtered.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  tbody.innerHTML = filtered.map(i => {
+    const lastResp = [...(i.history||[])].reverse().find(h=>h.actor==='dataclysm');
+    const sKey = (i.status||'').replace(/['\s]/g,s=>s==="'"?'':'-');
+    return `<tr class="${i.status==='Resolved'?'resolved-row':''}" style="cursor:pointer" onclick="openPanel(${i.id})">
+      <td><span class="id-tag">${esc(i.issueId)}</span></td>
+      <td><div class="title-text">${esc(i.title)}</div><div class="desc-text">${esc(i.desc)}</div></td>
+      <td><span class="badge mod-${modKey(i.module)}">${esc(i.module)}</span></td>
+      <td><span class="badge type-${i.type}">${esc(i.type)}</span></td>
+      <td><div class="prio-wrap"><div class="prio-dot p-${i.priority}"></div><span>${esc(i.priority)}</span></div></td>
+      <td onclick="event.stopPropagation()">
+        <select class="status-pill s-${sKey}" onchange="quickStatus(${i.id},this.value)">
+          <option ${i.status==='Open'?'selected':''}>Open</option>
+          <option ${i.status==='In Progress'?'selected':''}>In Progress</option>
+          <option ${i.status==='Resolved'?'selected':''}>Resolved</option>
+          <option ${i.status==="Won't Fix"?'selected':''}>Won't Fix</option>
+        </select>
+      </td>
+      <td style="font-size:12px">${esc(i.reporter)}</td>
+      <td class="date-cell">${fmtDate(i.created)}</td>
+      <td>${lastResp?`<span class="response-snip">${esc(lastResp.text.substring(0,60))}${lastResp.text.length>60?'…':''}</span>`:'<span class="no-resp">—</span>'}</td>
+      <td onclick="event.stopPropagation()">
+        <button class="icon-btn" onclick="openPanel(${i.id})" title="View"><i class="ti ti-eye"></i></button>
+        ${currentMode==='internal'?`<button class="icon-btn" onclick="deleteIssue(${i.id})" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// CRUD
+// ============================================================
+function openNewModal() {
+  ['f-title','f-desc','f-reporter','f-steps'].forEach(id=>document.getElementById(id).value='');
+  ['m-module','m-type','m-priority'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-reporter').value = currentUser;
+  document.getElementById('new-modal').classList.add('open');
+}
+function closeNewModal() { document.getElementById('new-modal').classList.remove('open'); }
+
+async function saveNewIssue() {
+  const vals = {
+    title: document.getElementById('f-title').value.trim(),
+    desc: document.getElementById('f-desc').value.trim(),
+    module: document.getElementById('m-module').value,
+    type: document.getElementById('m-type').value,
+    priority: document.getElementById('m-priority').value,
+    reporter: document.getElementById('f-reporter').value.trim(),
+    steps: document.getElementById('f-steps').value.trim(),
+  };
+  if (!vals.title||!vals.desc||!vals.module||!vals.type||!vals.priority||!vals.reporter) {
+    showToast('Please fill in all required fields.', true); return;
+  }
+  const issue = { ...vals, status:'Open', history:[] };
+  closeNewModal();
+  try {
+    const { id, issueId } = await createIssue(issue);
+    issue.id = id;
+    issue.issueId = issueId;
+    issue.created = new Date().toISOString();
+    issues.unshift(issue);
+    renderTable();
+    updateStats();
+    showToast('Issue saved ✓');
+    sendNotification(
+      `[MineIQ] New Issue Logged — ${issue.issueId}: ${issue.title}`,
+      buildEmailHtml(
+        '🆕 New Issue Logged',
+        `${issue.reporter} has logged a new ${issue.type.toLowerCase()} in the MineIQ Issues Log.`,
+        issue,
+        issue.steps ? `<tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Steps</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${issue.steps.replace(/\n/g,'<br>')}</td></tr>` : ''
+      )
+    );
+  } catch(e) {
+    showToast('Failed to save: ' + e.message, true);
+  }
+}
+
+async function quickStatus(id, status) {
+  const issue = issues.find(i=>i.id===id);
+  if (!issue) return;
+  issue.status = status;
+  issue.history.push({ actor:'system', text:`Status changed to ${status}`, date:new Date().toISOString() });
+  renderTable(); updateStats();
+  if (currentDetailId===id) openPanel(id);
+  try { 
+    await updateIssue(issue); 
+    showToast('Status updated ✓');
+    sendNotification(
+      `[MineIQ] Status Updated — ${issue.issueId}: ${issue.title}`,
+      buildEmailHtml(
+        '🔄 Issue Status Updated',
+        `The status of issue ${issue.issueId} has been changed to <strong>${status}</strong>.`,
+        issue
+      )
+    );
+  }
+  catch(e) { showToast('Sync failed: '+e.message, true); }
+}
+
+async function deleteIssue(id) {
+  if (!confirm('Delete this issue? This cannot be undone.')) return;
+  try {
+    await sbFetch(`issues?id=eq.${id}`, 'DELETE');
+    issues = issues.filter(i=>i.id!==id);
+    if (currentDetailId===id) closePanel();
+    renderTable();
+    updateStats();
+    showToast('Issue deleted.');
+  } catch(e) {
+    showToast('Delete failed: '+e.message, true);
+  }
+}
+
+function openPanel(id) {
+  const issue = issues.find(i=>i.id===id);
+  if (!issue) return;
+  currentDetailId = id;
+  document.getElementById('dp-id').textContent = issue.issueId;
+  document.getElementById('dp-title').textContent = issue.title;
+  document.getElementById('dp-desc').textContent = issue.desc;
+  document.getElementById('dp-steps').textContent = issue.steps || 'None provided.';
+  document.getElementById('dp-status-sel').value = issue.status;
+  document.getElementById('dp-response-ta').value = '';
+  document.getElementById('dp-meta').innerHTML = [
+    ['Module',issue.module],['Type',issue.type],
+    ['Priority',issue.priority],['Reporter',issue.reporter],
+    ['Logged',fmtDate(issue.created)],['ID',issue.issueId]
+  ].map(([k,v])=>`<div class="meta-item"><span>${k}</span><strong>${esc(v)}</strong></div>`).join('');
+  renderHistory(issue);
+  document.getElementById('panel-overlay').classList.add('open');
+}
+
+function closePanel() { document.getElementById('panel-overlay').classList.remove('open'); currentDetailId=null; }
+
+function renderHistory(issue) {
+  const hist = issue.history||[];
+  const c = document.getElementById('dp-history');
+  if (!hist.length) { c.innerHTML='<p style="font-size:13px;color:var(--text-muted)">No activity yet.</p>'; return; }
+  c.innerHTML=[...hist].reverse().map(h=>{
+    const cls = h.actor==='client'?'client-note':h.actor==='system'?'system-note':'';
+    const who = h.actor==='dataclysm'?'🏭 Dataclysm':h.actor==='client'?'👤 Client note':'⚙ System';
+    return `<div class="history-item ${cls}"><div class="h-meta">${who} · ${fmtDate(h.date)}</div><div class="h-text">${esc(h.text)}</div></div>`;
+  }).join('');
+}
+
+async function updatePanelStatus() {
+  await quickStatus(currentDetailId, document.getElementById('dp-status-sel').value);
+}
+
+async function addNote(actor) {
+  const text = document.getElementById('dp-response-ta').value.trim();
+  if (!text) { showToast('Please enter a note.', true); return; }
+  const issue = issues.find(i=>i.id===currentDetailId);
+  if (!issue) return;
+  issue.history.push({ actor, text, date:new Date().toISOString(), by: currentUser });
+  document.getElementById('dp-response-ta').value='';
+  renderHistory(issue);
+  renderTable();
+  try { 
+    await updateIssue(issue); 
+    showToast('Note saved ✓');
+    const isDataclysm = actor === 'dataclysm';
+    sendNotification(
+      `[MineIQ] ${isDataclysm ? 'Dataclysm Response' : 'Client Note'} — ${issue.issueId}: ${issue.title}`,
+      buildEmailHtml(
+        isDataclysm ? '🏭 Dataclysm has responded' : '👤 Client note added',
+        isDataclysm ? `Dataclysm has added a response to issue ${issue.issueId}.` : `A client note has been added to issue ${issue.issueId}.`,
+        issue,
+        `<tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">${isDataclysm?'Response':'Note'}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${text.replace(/\n/g,'<br>')}</td></tr>`
+      )
+    );
+  }
+  catch(e) { showToast('Sync failed: '+e.message, true); }
+}
+
+// ============================================================
+// EMAIL NOTIFICATIONS
+// ============================================================
+const APP_URL = 'https://gregarious-bombolone-298bdf.netlify.app';
+
+async function sendNotification(subject, htmlBody) {
+  try {
+    await fetch('https://kbohvissrjgvdrkollki.supabase.co/functions/v1/send-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY
+      },
+      body: JSON.stringify({ subject, html: htmlBody })
+    });
+  } catch(e) {
+    console.warn('Email notification failed:', e.message);
+  }
+}
+
+function buildEmailHtml(title, intro, issue, extraRows='') {
+  const priorityColor = { Critical:'#ef4444', High:'#f97316', Medium:'#f59e0b', Low:'#10b981' };
+  const statusColor = { Open:'#ef4444', 'In Progress':'#f97316', Resolved:'#10b981', "Won't Fix":'#6b7280' };
+  return `
+  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f0f2f5;padding:24px;">
+    <div style="background:#0f1f35;border-radius:10px 10px 0 0;padding:20px 24px;border-bottom:3px solid #f59e0b;display:flex;align-items:center;gap:12px;">
+      <div style="width:36px;height:36px;background:#f59e0b;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0f1f35;font-family:monospace;">MIQ</div>
+      <div>
+        <div style="color:white;font-size:15px;font-weight:600;">MineIQ — Issues & Suggestions Log</div>
+        <div style="color:#64748b;font-size:11px;">Eliwana · Syncline Haulage · Dataclysm</div>
+      </div>
+    </div>
+    <div style="background:white;padding:24px;border-radius:0 0 10px 10px;">
+      <h2 style="font-size:16px;color:#0f1f35;margin:0 0 6px;">${title}</h2>
+      <p style="color:#5a6a7e;font-size:13px;margin:0 0 20px;">${intro}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+        <tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;width:120px;">Issue ID</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-family:monospace;font-weight:600;">${issue.issueId}</td></tr>
+        <tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Title</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:500;">${issue.title}</td></tr>
+        <tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Module</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${issue.module}</td></tr>
+        <tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Priority</td><td style="padding:8px 12px;border-bottom:1px solid #eee;"><span style="background:${priorityColor[issue.priority]}22;color:${priorityColor[issue.priority]};padding:2px 8px;border-radius:4px;font-weight:600;font-size:11px;">${issue.priority}</span></td></tr>
+        <tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Status</td><td style="padding:8px 12px;border-bottom:1px solid #eee;"><span style="background:${(statusColor[issue.status]||'#6b7280')}22;color:${statusColor[issue.status]||'#6b7280'};padding:2px 8px;border-radius:4px;font-weight:600;font-size:11px;">${issue.status}</span></td></tr>
+        <tr><td style="padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Reporter</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${issue.reporter}</td></tr>
+        ${extraRows}
+      </table>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Description</div>
+        <div style="background:#f8f9fb;border-radius:6px;padding:12px;font-size:13px;color:#0f1f35;line-height:1.6;">${(issue.desc||'').replace(/\n/g,'<br>')}</div>
+      </div>
+      <a href="${APP_URL}" style="display:inline-block;background:#f59e0b;color:#0f1f35;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;">View in MineIQ Issues Log →</a>
+    </div>
+    <p style="text-align:center;color:#94a3b8;font-size:11px;margin-top:16px;">MineIQ Issues Log · Eliwana Site · Syncline Haulage</p>
+  </div>`;
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmtDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){ return iso; }
+}
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setSyncing(v) {
+  document.getElementById('sync-dot').className='sync-dot'+(v?' syncing':'');
+  document.getElementById('sync-label').textContent=v?'Syncing…':'Synced';
+}
+function setSynced() { setSyncing(false); }
+function setSyncError() {
+  document.getElementById('sync-dot').className='sync-dot error';
+  document.getElementById('sync-label').textContent='Sync error';
+}
+function showToast(msg, isError=false) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(isError?' error':'')+' show';
+  setTimeout(()=>t.className='toast'+(isError?' error':''),4000);
+}
+
+switchTab('internal');
+</script>
+</body>
+</html>
