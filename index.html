@@ -513,7 +513,7 @@ function renderTable() {
   const fM = document.getElementById('f-module').value;
   const fP = document.getElementById('f-priority').value;
   const fT = document.getElementById('f-type').value;
-  const pOrder = { Critical:0, High:1, Medium:2, Low:3 };
+  const pOrder = { Critical:0, High:1, Medium:2, Low:3, '':4 };
   const modKey = m => (m||'').replace(/[\s-]+/g,'-');
 
   let filtered = issues.filter(i => {
@@ -526,7 +526,9 @@ function renderTable() {
   }).sort((a,b) => {
     if (a.status==='Resolved'&&b.status!=='Resolved') return 1;
     if (b.status==='Resolved'&&a.status!=='Resolved') return -1;
-    return (pOrder[a.priority]||2)-(pOrder[b.priority]||2);
+    const pDiff = (pOrder[a.priority]??4)-(pOrder[b.priority]??4);
+    if (pDiff !== 0) return pDiff;
+    return new Date(b.created) - new Date(a.created);
   });
 
   const tbody = document.getElementById('table-body');
