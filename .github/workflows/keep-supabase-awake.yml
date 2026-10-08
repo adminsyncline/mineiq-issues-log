@@ -1,0 +1,38 @@
+name: Keep Supabase awake
+
+# Pings the MineIQ issues log database every 3 days so the
+# Supabase free tier never auto-pauses (it pauses after ~7 days idle).
+
+on:
+  schedule:
+    - cron: "0 0 */3 * *"   # 00:00 UTC = 8:00am Perth, every 3 days
+  workflow_dispatch:         # lets you run it manually from the Actions tab
+
+permissions:
+  actions: write             # needed by the keepalive step below
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query the issues table
+        env:
+          # Public anon key - the same one already in index.html.
+          # Replace the text between the quotes with your key (starts with eyJ or sb_publishable_).
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtib2h2aXNzcmpndmRya29sbGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg2MzgsImV4cCI6MjA5Nzc2NDYzOH0.xqj-Bq8dbl2p4LvzLaTYv7nOMjl63zF8hNJOZ-ooh1c',
+    DATACLYSM_PIN: 'DATACLYSM2024
+        run: |
+          status=$(curl -s -o response.txt -w "%{http_code}" \
+            "https://kbohvissrjgvdrkollki.supabase.co/rest/v1/issues?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY")
+          echo "HTTP status: $status"
+          cat response.txt
+          if [ "$status" != "200" ]; then
+            echo "::error::Supabase did not respond OK - the project may be paused. Restore it at https://supabase.com/dashboard"
+            exit 1
+          fi
+
+      # GitHub switches off scheduled workflows after 60 days with no
+      # repo activity. This step quietly keeps this one switched on.
+      - name: Keep this schedule enabled
+        uses: liskin/gh-workflow-keepalive@v1
