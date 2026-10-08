@@ -20,8 +20,7 @@ jobs:
           # Public anon key - the same one already in index.html.
           # Replace the text between the quotes with your key (starts with eyJ or sb_publishable_).
           SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtib2h2aXNzcmpndmRya29sbGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODg2MzgsImV4cCI6MjA5Nzc2NDYzOH0.xqj-Bq8dbl2p4LvzLaTYv7nOMjl63zF8hNJOZ-ooh1c',
-    DATACLYSM_PIN: 'DATACLYSM2024
-        run: |
+           run: |
           status=$(curl -s -o response.txt -w "%{http_code}" \
             "https://kbohvissrjgvdrkollki.supabase.co/rest/v1/issues?select=id&limit=1" \
             -H "apikey: $SUPABASE_ANON_KEY")
